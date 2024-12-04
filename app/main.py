@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import PlainTextResponse
 from fastapi.security import OAuth2PasswordBearer
-import app.db_utils as db
+import app.database as db
 from app.models import BanUser
 import app.settings as settings
 
@@ -17,6 +17,17 @@ async def ban_user(ban_user: BanUser, token: str = Depends(oauth2_scheme)):
 
     db.add_ban(ban_user.name, ban_user.id, ban_user.reason)
     return {"message": "User banned successfully"}
+
+@app.post("/api/unbanuser")
+async def unban_user(steamid: str, token: str = Depends(oauth2_scheme)):
+    if token != BEARER_TOKEN:
+        raise HTTPException(status_code=403, detail="Invalid token")
+    
+    success = db.remove_ban(steamid)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found in banlist")
+
+    return {"message": f"User with ID {steamid} has been unbanned successfully"}
 
 @app.get("/api/banlist.txt", response_class=PlainTextResponse)
 async def get_public_banlist():

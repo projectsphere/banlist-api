@@ -23,6 +23,15 @@ def add_ban(name: str, steamid: str, reason: str):
     cursor.execute("INSERT INTO bans (name, steamid, reason) VALUES (?, ?, ?)", (name, steamid, reason))
     conn.commit()
     conn.close()
+    
+def remove_ban(steamid: str) -> bool:
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM bans WHERE steamid = ?", (steamid,))
+    changes = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return changes > 0
 
 def get_ban():
     conn = sqlite3.connect(DB_FILE)
