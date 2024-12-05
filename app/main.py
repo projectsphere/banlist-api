@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 import app.database as db
 from app.models import BanUser
 import app.settings as settings
+import aiohttp
 
 app = FastAPI()
 
@@ -31,8 +32,10 @@ async def unban_user(steamid: str, token: str = Depends(oauth2_scheme)):
 
 @app.get("/api/banlist.txt", response_class=PlainTextResponse)
 async def get_public_banlist():
-    bans = db.get_ban()
-    formatted_content = " ".join([ban["id"] for ban in bans])
+    my_bans = db.get_ban()
+    palworld_bans = db.get_palworld_bans()
+    all_bans = [ban["id"] for ban in my_bans] + palworld_bans
+    formatted_content = " ".join(all_bans)
     return PlainTextResponse(formatted_content, media_type="text/plain")
 
 @app.get("/api/bannedusers")
@@ -40,3 +43,22 @@ async def banned_users(token: str = Depends(oauth2_scheme)):
     if token != BEARER_TOKEN:
         raise HTTPException(status_code=403, detail="Invalid token")
     return db.get_ban()
+
+@app.post("/api/syncbans")
+async def sync_palworld_bans(token: str = Depends(oauth2_scheme)):
+    if token != BEARER_TOKEN:
+        raise HTTPException(status_code=403, detail="Invalid token")
+    
+    url = "https://api.palworldgame.com/api/banlist.txt"
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    raise HTTPException(status_code=500, detail=f"Failed to fetch banlist: {response.status}")
+                data = await response.text()
+                ban_ids = data.strip().split()
+                db.insert_palworld_bans(ban_ids)
+                return {"message": f"{len(ban_ids)} bans synced successfully"}
+    except aiohttp.ClientError as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching Palworld bans: {str(e)}")

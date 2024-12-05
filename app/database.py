@@ -14,6 +14,11 @@ def create_db():
             reason TEXT NOT NULL
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS palworld_bans (
+            id TEXT PRIMARY KEY
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -40,5 +45,20 @@ def get_ban():
     rows = cursor.fetchall()
     conn.close()
     return [{"name": row[0], "id": row[1], "reason": row[2]} for row in rows]
+
+def insert_palworld_bans(ban_ids):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.executemany("INSERT OR IGNORE INTO palworld_bans (id) VALUES (?)", [(ban_id,) for ban_id in ban_ids])
+    conn.commit()
+    conn.close()
+    
+def get_palworld_bans():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM palworld_bans")
+    rows = cursor.fetchall()
+    conn.close()
+    return [row[0] for row in rows]
 
 create_db()
