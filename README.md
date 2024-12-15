@@ -14,10 +14,7 @@
  - `/api/syncbans`: Endpoint that will pull Palworlds official banlist and add it to the database.
 
  ## Setup
- Simple setup for Windows users.
+ Simple setup for Docker.
  ```
- python -m venv venv
- venv/Scripts/Activate
- python -m pip install -r requirements.txt
- python main.py
+ docker-compose up --build
  ```
