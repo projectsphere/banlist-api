@@ -46,6 +46,14 @@ def get_ban():
     conn.close()
     return [{"name": row[0], "id": row[1], "reason": row[2]} for row in rows]
 
+def get_ban_name(name: str):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, steamid, reason FROM bans WHERE name LIKE ?", (f"%{name}%",))
+    rows = cursor.fetchall()
+    conn.close()
+    return [{"name": row[0], "id": row[1], "reason": row[2]} for row in rows]
+
 def insert_palworld_bans(ban_ids):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()

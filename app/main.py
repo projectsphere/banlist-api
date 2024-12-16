@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.responses import PlainTextResponse
 from fastapi.security import OAuth2PasswordBearer
 import app.database as db
@@ -39,9 +39,11 @@ async def get_public_banlist():
     return PlainTextResponse(formatted_content, media_type="text/plain")
 
 @app.get("/api/bannedusers")
-async def banned_users(token: str = Depends(oauth2_scheme)):
+async def banned_users(token: str = Depends(oauth2_scheme), name: str = Query(None)):
     if token != BEARER_TOKEN:
         raise HTTPException(status_code=403, detail="Invalid token")
+    if name:
+        return db.get_ban_name(name)
     return db.get_ban()
 
 @app.post("/api/syncbans")
