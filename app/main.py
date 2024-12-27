@@ -39,7 +39,7 @@ async def get_public_banlist():
     my_bans = await db.get_ban()
     palworld_bans = await db.get_palworld_bans()
     all_bans = [ban["id"] for ban in my_bans] + palworld_bans
-    formatted_content = " ".join(all_bans)
+    formatted_content = "\n".join(all_bans)
     return PlainTextResponse(formatted_content, media_type="text/plain")
 
 @app.get("/api/bannedusers")
