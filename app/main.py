@@ -24,15 +24,15 @@ async def ban_user(ban_user: BanUser, token: str = Depends(oauth2_scheme)):
     return {"message": "User banned successfully"}
 
 @app.post("/api/unbanuser")
-async def unban_user(steamid: str, token: str = Depends(oauth2_scheme)):
+async def unban_user(userid: str, token: str = Depends(oauth2_scheme)):
     if token != BEARER_TOKEN:
         raise HTTPException(status_code=403, detail="Invalid token")
     
-    success = await db.remove_ban(steamid)
+    success = await db.remove_ban(userid)
     if not success:
         raise HTTPException(status_code=404, detail="User not found in banlist")
 
-    return {"message": f"User with ID {steamid} has been unbanned successfully"}
+    return {"message": f"User with ID {userid} has been unbanned successfully"}
 
 @app.get("/api/banlist.txt", response_class=PlainTextResponse)
 async def get_public_banlist():
