@@ -55,7 +55,7 @@ async def sync_palworld_bans(token: str = Depends(oauth2_scheme)):
     if token != BEARER_TOKEN:
         raise HTTPException(status_code=403, detail="Invalid token")
     
-    url = "https://api.palworldgame.com/api/banlist.txt"
+    url = "https://b.palworldgame.com/api/banlist.txt"
 
     try:
         async with aiohttp.ClientSession() as session:
